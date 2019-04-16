@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <new>
 #include <climits>
+#include <numeric>
 using namespace std;
 
 template <class T>
@@ -15,13 +16,15 @@ private:
 	vector <vector<T>> matrix;
 	vector <T> column;
 public:
+	// конструктор 
+	CSqMatrix() {}
 
-	/* конструктор копирования
-	CSqMatrix(const CSqMatrix &other)
+	//конструктор копирования
+	CSqMatrix(const CSqMatrix &first_matrix) :size(first_matrix.size), matrix(first_matrix.matrix), column(first_matrix.column)
 	{
-		this->size = other.size();
-		this->matrix = new T[other.size()];
-	} */
+		cout << "Конструктор сработал!" << endl;
+	}
+	/* void operator = (const A &a);  // оператор присваивания */
 
 	// ввод размера матрицы
 	bool input_matrix_size()
@@ -43,7 +46,7 @@ public:
 			column.clear();
 			for (int j = 0; j < size; j++)
 			{
-				cout << "M[" << i+1 << "][" << j+1 << "] = ";
+				cout << "M[" << i + 1 << "][" << j + 1 << "] = ";
 				cin >> col;
 				column.push_back(col);
 				if (cin.fail())
@@ -70,7 +73,7 @@ public:
 	}
 
 	// получение текущего размера матрицы
-	void get_size() 
+	void get_size()
 	{
 		int i = 0,
 			j = 0;
@@ -90,9 +93,9 @@ public:
 			for (int j = 1; j < size; j++)
 			{
 				if (matrix[i][j] < min)
-						min = matrix[i][j];
+					min = matrix[i][j];
 				else if (matrix[i][j] > max)
-						max = matrix[i][j];
+					max = matrix[i][j];
 				else continue;
 			}
 			min_elements.push_back(min);
@@ -103,7 +106,7 @@ public:
 		cout << "Минимальный элемент: " << *min_result << endl;
 		cout << "Максимальный элемент: " << *max_result << endl;
 	}
-	
+
 
 	// сумма элементов над главной диагональю 
 	void sum_above_diagonal()
@@ -120,7 +123,7 @@ public:
 					{
 						sum += matrix[i][j];
 					}
-					else continue;	
+					else continue;
 				}
 			}
 			cout << "Сумма над главной диагональю: " << sum << endl;
@@ -129,33 +132,77 @@ public:
 			cout << "Матрица пуста" << endl;
 		}
 	}
+
+	/* сумма элементов строки
+	auto row_amount(matrix)
+	{
+		int i;
+		T row_sum = 0;
+		for (int j = 0; j < size; j++)
+		{
+			row_sum += matrix[i][j];
+		}
+		return row_sum;
+	}
+
+	// сортировка
+	void sort_matrix() 
+	{		
+		for (int i = 0; i < size; i++) {
+			// Вытаскиваем строку
+			int value = matrix[i];
+			// Сумма первой строки 
+			auto current_sum = row_amount(matrix[i]);
+			// Перемещаемся по элементам, суммы которых перед вытащенным элементом
+			int k = i - 1;
+			for (; k >= 0; k--) {
+				auto prev_sum = row_amount(matrix[k]);
+				// Если вытащили значение, сумма которого меньшее — передвигаем элемент с большей суммой дальше
+				if (current_sum < prev_sum) {
+					matrix[k + 1] = matrix[k];
+				}
+				else {
+					// Если вытащенный элемент больше — останавливаемся
+					break;
+				}
+			}
+			// В освободившееся место вставляем вытащенное значение
+			matrix[k + 1] = value;
+		}
+		
+	}*/
 };
 
-	int main()
-	{
-		setlocale(LC_ALL, "RUS");
-		SetConsoleOutputCP(1251);
-		SetConsoleCP(1251);
-		
-		CSqMatrix <int> first_matrix;
-		first_matrix.input_matrix_size();
-		try {
-			first_matrix.input_matrix();
-			first_matrix.get_size();
-			first_matrix.output_matrix();
-			first_matrix.sum_above_diagonal();
-			first_matrix.min_max();
-		}
-		catch (bad_array_new_length&)
-		{
-			cerr << "Ошибка";
-			return -1;
-		}
-		catch (exception&)
-		{
-			cerr << "Ошибка";
-			return -2;
-		}
-		
+int main()
+{
+	setlocale(LC_ALL, "RUS");
+	SetConsoleOutputCP(1251);
+	SetConsoleCP(1251);
+
+	CSqMatrix <int> first_matrix;
+	
+	first_matrix.input_matrix_size();
+	try {
+		first_matrix.input_matrix();
+		first_matrix.get_size();
+		first_matrix.output_matrix();
+		first_matrix.sum_above_diagonal();
+		first_matrix.min_max();
+		//first_matrix.sort_matrix();
 	}
+	catch (bad_array_new_length&)
+	{
+		cerr << "Ошибка";
+		return -1;
+	}
+	catch (exception&)
+	{
+		cerr << "Ошибка";
+		return -2;
+	}
+	CSqMatrix <int> second_matrix(first_matrix);
+	second_matrix.output_matrix();
+
+}
+
 
