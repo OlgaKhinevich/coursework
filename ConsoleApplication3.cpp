@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <new>
 #include <climits>
+#include <stdexcept>
 #include <numeric>
 using namespace std;
 
@@ -15,26 +16,62 @@ private:
 	int size;
 	vector <vector<T>> matrix;
 	vector <T> column;
+	vector <T> sum_rows;
 public:
 	// конструктор 
 	CSqMatrix() {}
 
 	//конструктор копирования
-	CSqMatrix(const CSqMatrix &first_matrix) :size(first_matrix.size), matrix(first_matrix.matrix), column(first_matrix.column)
+	CSqMatrix(const CSqMatrix& first_matrix) :size(first_matrix.size), matrix(first_matrix.matrix), column(first_matrix.column)
 	{
-		cout << "Конструктор сработал!" << endl;
+		if (matrix.size() <= 0)
+			throw exception("Невозможно создать конструктор!");
+		cout << "Конструктор копирования сработал!" << endl;
 	}
-	/* void operator = (const A &a);  // оператор присваивания */
+
+	/*
+	CSqMatrix& operator=(const CSqMatrix& first_matrix)
+	{
+		size = first_matrix.size;
+		matrix = first_matrix.matrix;
+		column = first_matrix.column;
+		return *this;
+	}
+	*/
+
+
+	/* оператор присваивания пермещением
+	CSqMatrix& operator=(CSqMatrix&& first_matrix)
+	{
+		first_matrix.size = 0;
+		first_matrix.column = nullptr;
+		first_matrix.matrix = nullptr;
+
+		return *this;
+	}*/
+
+
+	/*конструктор перемещения
+	CSqMatrix(CSqMatrix&& second_matrix) :size(second_matrix.size), matrix(second_matrix.matrix), column(second_matrix.column)
+	{
+		second_matrix.size = 0;
+		second_matrix.matrix = nullptr;
+		second_matrix.column = nullptr;
+		cout << "Конструктор перемещения сработал!" << endl;
+	}*/
+
 
 	// ввод размера матрицы
-	bool input_matrix_size()
+	int input_matrix_size()
 	{
 		size = 0;
 		cout << "Введите размер квадратной матрицы: ";
 		cin >> size;
-		if (cin.fail())
-			return false;
-		return size > 0;
+		if (cin.fail() || size <= 0)
+		{
+			throw length_error("");
+		}
+		return size;
 	}
 
 	// ввод матрицы
@@ -50,7 +87,7 @@ public:
 				cin >> col;
 				column.push_back(col);
 				if (cin.fail())
-					throw exception();
+					throw exception("Элемент не введен!");
 			}
 			matrix.push_back(column);
 		}
@@ -70,6 +107,13 @@ public:
 				cout << endl;
 			}
 		}
+
+	}
+
+	// удаление матрицы
+	void delete_matrix()
+	{
+
 	}
 
 	// получение текущего размера матрицы
@@ -77,6 +121,11 @@ public:
 	{
 		int i = 0,
 			j = 0;
+		if (matrix.size() <= 0)
+		{
+			throw exception("Размер матрицы неверный!");
+		}
+
 		cout << "Создана квадратная матрица размером: " << matrix[i].size() << "x" << matrix[j].size() << endl;
 	}
 
@@ -88,15 +137,16 @@ public:
 		vector <T> min_elements;
 		vector <T> max_elements;
 
-		for (int i = 1; i < size; i++)
+		for (int i = 0; i < size; i++)
 		{
-			for (int j = 1; j < size; j++)
+			for (int j = 0; j < size; j++)
 			{
 				if (matrix[i][j] < min)
 					min = matrix[i][j];
 				else if (matrix[i][j] > max)
 					max = matrix[i][j];
 				else continue;
+
 			}
 			min_elements.push_back(min);
 			max_elements.push_back(max);
@@ -111,7 +161,7 @@ public:
 	// сумма элементов над главной диагональю 
 	void sum_above_diagonal()
 	{
-		auto sum = 0;
+		T sum = 0;
 		matrix.resize(size, vector<T>(size));
 		if (!matrix.empty())
 		{
@@ -133,30 +183,33 @@ public:
 		}
 	}
 
-	/* сумма элементов строки
-	auto row_amount(matrix)
+	// сумма элементов строки
+	auto row_amount()
 	{
-		int i;
-		T row_sum = 0;
-		for (int j = 0; j < size; j++)
+		for (int i = 0; i < size; i++)
 		{
-			row_sum += matrix[i][j];
+			T row_sum = 0;
+			for (int j = 0; j < size; j++)
+			{
+				row_sum += matrix[i][j];
+			}
+			sum_rows.push_back(row_sum);
 		}
-		return row_sum;
+		return sum_rows;
 	}
 
 	// сортировка
-	void sort_matrix() 
-	{		
+	void sort_matrix()
+	{
 		for (int i = 0; i < size; i++) {
 			// Вытаскиваем строку
-			int value = matrix[i];
-			// Сумма первой строки 
-			auto current_sum = row_amount(matrix[i]);
-			// Перемещаемся по элементам, суммы которых перед вытащенным элементом
+			auto value = matrix[i];
+			// Сумма первой строки
+			auto current_sum = sum_rows[i];
+			// Перемещаемся по cтрокам, суммы которых перед вытащенной строкой
 			int k = i - 1;
 			for (; k >= 0; k--) {
-				auto prev_sum = row_amount(matrix[k]);
+				auto prev_sum = sum_rows[k];
 				// Если вытащили значение, сумма которого меньшее — передвигаем элемент с большей суммой дальше
 				if (current_sum < prev_sum) {
 					matrix[k + 1] = matrix[k];
@@ -169,8 +222,8 @@ public:
 			// В освободившееся место вставляем вытащенное значение
 			matrix[k + 1] = value;
 		}
-		
-	}*/
+
+	}
 };
 
 int main()
@@ -180,29 +233,47 @@ int main()
 	SetConsoleCP(1251);
 
 	CSqMatrix <int> first_matrix;
-	
-	first_matrix.input_matrix_size();
+
+
 	try {
+		first_matrix.input_matrix_size();
+		cout << "\n";
 		first_matrix.input_matrix();
+		cout << "\n";
 		first_matrix.get_size();
+		cout << "\n";
 		first_matrix.output_matrix();
-		first_matrix.sum_above_diagonal();
+		cout << "\n";
 		first_matrix.min_max();
-		//first_matrix.sort_matrix();
-	}
-	catch (bad_array_new_length&)
-	{
-		cerr << "Ошибка";
-		return -1;
-	}
-	catch (exception&)
-	{
-		cerr << "Ошибка";
-		return -2;
-	}
-	CSqMatrix <int> second_matrix(first_matrix);
-	second_matrix.output_matrix();
+		cout << "\n";
+		first_matrix.sum_above_diagonal();
+		first_matrix.row_amount();
+		first_matrix.sort_matrix();
+		cout << "\n";
+		first_matrix.output_matrix();
+		//first_matrix.delete_matrix();
+		CSqMatrix <int> second_matrix(first_matrix);
+		cout << "\n";
+		second_matrix.output_matrix();
+		CSqMatrix <int> third_matrix;
+		third_matrix = first_matrix;
+		cout << "\n";
+		third_matrix.output_matrix();
 
+	}
+	catch (const length_error&)
+	{
+		cout << "Размер меньше нуля!" << endl;
+	}
+	catch (const bad_array_new_length&)
+	{
+		cout << "Ошибка ввода матрицы!" << endl;
+	}
+	catch (const exception &ex)
+	{
+		cout << "Ошибка!" << ex.what() << endl;
+	}
+
+	//CSqMatrix <int> third_matrix = move(second_matrix);
+	system("pause");
 }
-
-
