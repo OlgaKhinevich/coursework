@@ -11,9 +11,15 @@ private:
 	std::vector <T> column;
 	
 public:
-	// конструктор 
-	CSqMatrix() {}
+	// конструктор с параметром
+	CSqMatrix(int m_size)
+	{
+		size = m_size;
+		
+	}
 
+	CSqMatrix() = delete;
+	
 	// деструктор
 	~CSqMatrix() {	
 		size = 0;
@@ -22,10 +28,7 @@ public:
 	}
 
 	// конструктор копировани€ объекта
-	CSqMatrix(const CSqMatrix& first_matrix) :size(first_matrix.size), matrix(first_matrix.matrix), column(first_matrix.column)
-	{
-		std::cout << " онструктор копировани€ сработал!" << std::endl;
-	}
+	CSqMatrix(const CSqMatrix& first_matrix) :size(first_matrix.size), matrix(first_matrix.matrix), column(first_matrix.column) {}
 
 	//оператор присваивани€ копированием
 	CSqMatrix& operator = (const CSqMatrix& first_matrix)
@@ -37,7 +40,6 @@ public:
 		size = first_matrix.size;
 		matrix = first_matrix.matrix;
 		column = first_matrix.column;
-		std::cout << "ќператор присваивани€ копированием сработал!" << std::endl;
 		return *this;
 	}
 
@@ -48,7 +50,6 @@ public:
 		matrix = std::move(first_matrix.matrix);
 		column = std::move(first_matrix.column);
 		first_matrix.size = 0;
-		std::cout << "ќператор присваивани€ перемещением сработал!" << std::endl;
 		return *this;
 		
 	}
@@ -57,17 +58,6 @@ public:
 	CSqMatrix(CSqMatrix&& first_matrix) :size(std::move(first_matrix.size)), matrix(std::move(first_matrix.matrix)), column(std::move(first_matrix.column))
 	{
 		first_matrix.size = 0;
-		std::cout << " онструктор перемещени€ сработал!" << std::endl;
-	}
-
-	// ввод размера матрицы
-	void input_matrix_size (std::istream& InputStream)
-	{
-		InputStream >> size;
-		if (InputStream.fail() || size <= 0)
-		{
-			throw std::underflow_error("–азмер матрицы имеет недопустимое значение!");
-		}
 	}
 
 	// прототип метода ввода матрицы
@@ -95,9 +85,6 @@ public:
 
 	// прототип метода получени€ суммы элементов над главной диагональю 
 	auto sum_above_diagonal();
-
-	// прототип метода получени€ суммы элементов строки
-	auto row_amount(int row_number);
 
 	// прототип сортировки
 	void sort_matrix();
@@ -190,7 +177,6 @@ template<class T>
 auto CSqMatrix<T>::sum_above_diagonal()
 {
 	T sum = 0;
-	matrix.resize(size, std::vector<T>(size));
 	if (!matrix.empty())
 	{
 		for (int i = 0; i < size; i++)
@@ -211,39 +197,31 @@ auto CSqMatrix<T>::sum_above_diagonal()
 	}
 }
 
-// реализаци€ метода дл€ подсчета суммы строки
-template<class T>
-auto CSqMatrix<T>::row_amount(int row_number)
-{
-	T row_sum;
-	std::vector<T> sum_row;
-	if (!matrix.empty() and row_number <= size)
-	{
-		for (int j = 0; j < size; j++)
-			sum_row.push_back(matrix[row_number][j]);
-	}
-	row_sum = std::accumulate(sum_row.begin(), sum_row.end(), T(0));
-	return row_sum;
-}
-
 // реализаци€ метода сортировки
 template<class T>
 void CSqMatrix<T>::sort_matrix()
 {
-	for (int i = 0; i < size; i++) {
-		auto value = matrix[i];
-		auto current_sum = row_amount(i);
-		int k = i - 1;
-		for (; k >= 0; k--) {
-			auto prev_sum = row_amount(k);
-			if (current_sum < prev_sum) {
-				matrix[k + 1] = matrix[k];
-			}
-			else {
-				break;
-			}
+	std::sort(matrix.begin(), matrix.end(),
+		[](const std::vector <T> & a, const std::vector <T> & b) -> bool
+	{
+		T sumA = 0;
+		for (T item : a)
+		{
+			sumA += item;
 		}
-		matrix[k + 1] = value;
-	}
+		T sumB = 0;
+		for (T item : b)
+		{
+			sumB += item;
+		}
+		if (sumA < sumB)
+		{
+			return true;
+		}
+		else {
+			return false;
+		}
+	});
 }
+	
 #endif 
